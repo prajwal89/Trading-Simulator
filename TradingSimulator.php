@@ -3,6 +3,7 @@
 // todo configurable position size of each trade
 // todo validate inputs
 // todo average time taken for trade
+// todo improve MDD calculation
 
 class TradingSimulator
 {
@@ -159,13 +160,11 @@ class TradingSimulator
                 $totalFeePaid += $fee;
             }
 
-            $pnl = round($pnl, 2);
-
             $currentBalance += $pnl;
 
             $tradeResults['trades'][] = [
-                'pnl' => $pnl,
-                'balance' => $currentBalance,
+                'pnl' => round($pnl, 2),
+                'balance' => round($currentBalance, 2),
                 'fee' => round($fee, 2),
             ];
         }
@@ -201,18 +200,16 @@ class TradingSimulator
 
         $netProfitPercentage = $netProfit / ($this->initialBalance / 100);
 
-        $totalFeePaid = $totalFeePaid;
-
         $stats = [
             'balance' => round($finalBalance, 2),
-            'fee' => round($totalFeePaid),
+            'fee' => round($totalFeePaid, 2),
             'mdd' => round($this->calculateMaxDrawdown($trades), 2),
             'gross' => [
                 'pnl' => round($grossProfit, 2),
                 'percentage' => round($grossProfitPercentage, 2)
             ],
             'net' => [
-                'pnl' => round($netProfit, 1),
+                'pnl' => round($netProfit, 2),
                 'percentage' => round($netProfitPercentage, 2)
             ]
         ];
