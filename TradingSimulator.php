@@ -2,6 +2,7 @@
 
 // todo configurable position size of each trade
 // todo validate inputs
+// todo average time taken for trade
 
 class TradingSimulator
 {
@@ -53,22 +54,18 @@ class TradingSimulator
     {
         $this->validateInputs();
 
-        // save results of each batch
         $tradeResults = [];
 
-        // initial balance is principle amount
         $tradeResults['balance'] = $this->principleAmount;
 
         $arrayOfWinsAndLoses = $this->generateTradeResults();
 
-        // simulate each trade of trade set
         $totalFeePaid = 0;
 
         foreach ($arrayOfWinsAndLoses as $isWin) {
             // * size of each trade will be $principle amount
 
             $pnl = 0;
-            $finalBalanceForSet = 0;
             $positionSize = 0;
 
             // calculate PNL
@@ -98,11 +95,27 @@ class TradingSimulator
 
             $tradeResults['trades'][] = [
                 'pnl' => $pnl,
-                'balance' => $tradeResults['balance']
+                'balance' => $tradeResults['balance'],
+                'fee' => round($fee, 2),
             ];
         }
 
-        $finalBalance = end($tradeResults['trades'])['balance'];
+        $tradeResults = array_merge(
+            $this->getStats($tradeResults['trades']),
+            $tradeResults
+        );
+
+        return $tradeResults;
+    }
+
+
+    private function getStats(array $trades): array
+    {
+        $totalFeePaid = round(array_sum(array_map(function ($trade) {
+            return $trade['fee'];
+        }, $trades)), 2);
+
+        $finalBalance = end($trades)['balance'];
 
         $grossProfit = $finalBalance - $this->principleAmount;
 
@@ -112,12 +125,12 @@ class TradingSimulator
 
         $netProfitPercentage = round($netProfit / ($this->principleAmount / 100), 2);
 
-        $mdd = $this->calculateMaxDrawdown($tradeResults['trades']);
+        $mdd = $this->calculateMaxDrawdown($trades);
 
         $totalFeePaid = round($totalFeePaid, 2);
 
-        $results = [
-            'balance' => $finalBalanceForSet,
+        $stats = [
+            'balance' => $finalBalance,
             'fee' => $totalFeePaid,
             'mdd' => $mdd,
             'gross' => [
@@ -128,14 +141,10 @@ class TradingSimulator
                 'pnl' => $netProfit,
                 'percentage' => $netProfitPercentage
             ]
-
         ];
 
-        $tradeResults = array_merge($results, $tradeResults);
-
-        return $tradeResults;
+        return $stats;
     }
-
 
     private function printResults(array $results): void
     {
@@ -219,7 +228,7 @@ $simulator = new TradingSimulator();
 $results = $simulator->principleAmount(1000)
     ->totalTrades(10)
     ->winPercentage(50)
-    ->riskToRewardRatio(2.5)
+    ->riskToRewardRatio(2)
     ->platformFee(0.1)
     ->compounding(true)
     ->simulate();
