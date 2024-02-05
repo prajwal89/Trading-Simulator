@@ -126,7 +126,7 @@ class TradingSimulator
 
         $tradeResults = [];
 
-        $tradeResults['balance'] = $this->initialBalance;
+        $currentBalance = $this->initialBalance;
 
         $arrayOfWinsAndLoses = $this->generateTradeResults();
 
@@ -140,7 +140,7 @@ class TradingSimulator
 
             // calculate PNL
             if ($this->enableCompounding) {
-                $positionSize =  $tradeResults['balance'];
+                $positionSize =  $currentBalance;
             } else {
                 $positionSize =  $this->initialBalance;
             }
@@ -161,11 +161,11 @@ class TradingSimulator
 
             $pnl = round($pnl, 2);
 
-            $tradeResults['balance'] += $pnl;
+            $currentBalance += $pnl;
 
             $tradeResults['trades'][] = [
                 'pnl' => $pnl,
-                'balance' => $tradeResults['balance'],
+                'balance' => $currentBalance,
                 'fee' => round($fee, 2),
             ];
         }
@@ -187,35 +187,33 @@ class TradingSimulator
      */
     private function getStats(array $trades): array
     {
-        $totalFeePaid = round(array_sum(array_map(function ($trade) {
+        $totalFeePaid = array_sum(array_map(function ($trade) {
             return $trade['fee'];
-        }, $trades)), 2);
+        }, $trades));
 
         $finalBalance = end($trades)['balance'];
 
         $grossProfit = $finalBalance - $this->initialBalance;
 
-        $grossProfitPercentage = round($grossProfit / ($this->initialBalance / 100), 2);
+        $grossProfitPercentage = $grossProfit / ($this->initialBalance / 100);
 
         $netProfit = $grossProfit - $totalFeePaid;
 
-        $netProfitPercentage = round($netProfit / ($this->initialBalance / 100), 2);
+        $netProfitPercentage = $netProfit / ($this->initialBalance / 100);
 
-        $mdd = $this->calculateMaxDrawdown($trades);
-
-        $totalFeePaid = round($totalFeePaid, 2);
+        $totalFeePaid = $totalFeePaid;
 
         $stats = [
-            'balance' => $finalBalance,
-            'fee' => $totalFeePaid,
-            'mdd' => $mdd,
+            'balance' => round($finalBalance, 2),
+            'fee' => round($totalFeePaid),
+            'mdd' => round($this->calculateMaxDrawdown($trades), 2),
             'gross' => [
-                'pnl' => $grossProfit,
-                'percentage' => $grossProfitPercentage
+                'pnl' => round($grossProfit, 2),
+                'percentage' => round($grossProfitPercentage, 2)
             ],
             'net' => [
-                'pnl' => $netProfit,
-                'percentage' => $netProfitPercentage
+                'pnl' => round($netProfit, 1),
+                'percentage' => round($netProfitPercentage, 2)
             ]
         ];
 
@@ -302,7 +300,7 @@ class TradingSimulator
 
         $maxDrawdown = min($maxDrawdown, $drawdown);
 
-        return round($maxDrawdown * 100, 2);
+        return $maxDrawdown * 100;
     }
 
     /**
