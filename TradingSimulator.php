@@ -154,12 +154,9 @@ class TradingSimulator
                 $pnl = - ($positionSize / 100) * 1;
             }
 
-            // deduct platform fee
-            if ($this->platformFeeRate !== 0.0) {
-                $fee = ($this->platformFeeRate / 100) * $positionSize;
-                $pnl -= $fee;
-                $totalFeePaid += $fee;
-            }
+            $fee = ($this->platformFeeRate / 100) * $positionSize;
+
+            $pnl -= $fee;
 
             $currentBalance += $pnl;
 
