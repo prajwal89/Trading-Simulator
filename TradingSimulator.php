@@ -1,10 +1,7 @@
 <?php
 
-// todo add support simulating multiple batches
 // todo configurable position size of each trade
-// todo calculate average of batches
 // todo validate inputs
-// todo arrayable output for simulation
 
 class TradingSimulator
 {
@@ -52,82 +49,106 @@ class TradingSimulator
         return $this;
     }
 
-    public function simulate(int $times = 1): void
+    public function simulate(): array
     {
         $this->validateInputs();
 
         // save results of each batch
         $tradeResults = [];
 
-        $times = 1;
-        for ($batchNo = 1; $batchNo <= $times; $batchNo++) {
-            // initial balance is principle amount
-            $tradeResults[$batchNo]['balance'] = $this->principleAmount;
+        // initial balance is principle amount
+        $tradeResults['balance'] = $this->principleAmount;
 
-            // simulate each trade set
-            // $this->print('Simulating batchNo: ' . $batchNo, 'info');
+        $arrayOfWinsAndLoses = $this->generateTradeResults();
 
-            $arrayOfWinsAndLoses = $this->generateTradeResults();
+        // simulate each trade of trade set
+        $totalFeePaid = 0;
 
-            // simulate each trade of trade set
-            $totalFeePaid = 0;
-            foreach ($arrayOfWinsAndLoses as $isWin) {
-                // * size of each trade will be $principle amount
+        foreach ($arrayOfWinsAndLoses as $isWin) {
+            // * size of each trade will be $principle amount
 
-                $pnl = 0;
-                $finalBalanceForSet = 0;
-                $positionSize = 0;
+            $pnl = 0;
+            $finalBalanceForSet = 0;
+            $positionSize = 0;
 
-                // calculate PNL
-                if ($this->compounding) {
-                    $positionSize =  $tradeResults[$batchNo]['balance'];
-                } else {
-                    $positionSize =  $this->principleAmount;
-                }
-
-                if ($isWin) {
-                    $pnl = ($positionSize / 100) * $this->riskToRewardRatio;
-                } else {
-                    // 1 b.c  1/$this->riskToRewardRatio
-                    $pnl = - ($positionSize / 100) * 1;
-                }
-
-                // deduct platform fee 
-                if ($this->platformFee !== 0.0) {
-                    $fee = ($this->platformFee / 100) * $positionSize;
-                    $pnl -= $fee;
-                    $totalFeePaid += $fee;
-                }
-
-                $pnl = round($pnl, 2);
-
-                $tradeResults[$batchNo]['balance'] += $pnl;
-
-                $tradeResults[$batchNo]['trades'][] = [
-                    'pnl' => $pnl,
-                    'balance' => $tradeResults[$batchNo]['balance']
-                ];
+            // calculate PNL
+            if ($this->compounding) {
+                $positionSize =  $tradeResults['balance'];
+            } else {
+                $positionSize =  $this->principleAmount;
             }
 
-            $finalBalanceForSet = end($tradeResults[$batchNo]['trades'])['balance'];
+            if ($isWin) {
+                $pnl = ($positionSize / 100) * $this->riskToRewardRatio;
+            } else {
+                // 1 b.c  1/$this->riskToRewardRatio
+                $pnl = - ($positionSize / 100) * 1;
+            }
 
-            $grossProfit = $finalBalanceForSet - $this->principleAmount;
+            // deduct platform fee 
+            if ($this->platformFee !== 0.0) {
+                $fee = ($this->platformFee / 100) * $positionSize;
+                $pnl -= $fee;
+                $totalFeePaid += $fee;
+            }
 
-            $grossProfitPercentage = round($grossProfit / ($this->principleAmount / 100), 2);
+            $pnl = round($pnl, 2);
 
-            $netProfit = $grossProfit - $totalFeePaid;
+            $tradeResults['balance'] += $pnl;
 
-            $netProfitPercentage = round($netProfit / ($this->principleAmount / 100), 2);
+            $tradeResults['trades'][] = [
+                'pnl' => $pnl,
+                'balance' => $tradeResults['balance']
+            ];
+        }
 
-            $mdd = $this->calculateMaxDrawdown($tradeResults[$batchNo]['trades']);
+        $finalBalance = end($tradeResults['trades'])['balance'];
 
-            $totalFeePaid = round($totalFeePaid, 2);
+        $grossProfit = $finalBalance - $this->principleAmount;
 
-            $this->print("Final Balance: {$finalBalanceForSet}$", 'success');
-            $this->print("Gross PNL: {$grossProfit}$ ({$grossProfitPercentage}%)", 'success');
-            $this->print("Net PNL: {$netProfit}$ ({$netProfitPercentage}%)", 'success');
-            $this->print("Fee: {$totalFeePaid}$", 'success');
-            $this->print("MDD: {$mdd}%", 'success');
+        $grossProfitPercentage = round($grossProfit / ($this->principleAmount / 100), 2);
+
+        $netProfit = $grossProfit - $totalFeePaid;
+
+        $netProfitPercentage = round($netProfit / ($this->principleAmount / 100), 2);
+
+        $mdd = $this->calculateMaxDrawdown($tradeResults['trades']);
+
+        $totalFeePaid = round($totalFeePaid, 2);
+
+        $results = [
+            'balance' => $finalBalanceForSet,
+            'fee' => $totalFeePaid,
+            'mdd' => $mdd,
+            'gross' => [
+                'pnl' => $grossProfit,
+                'percentage' => $grossProfitPercentage
+            ],
+            'net' => [
+                'pnl' => $netProfit,
+                'percentage' => $netProfitPercentage
+            ]
+
+        ];
+
+        $tradeResults = array_merge($results, $tradeResults);
+
+        return $tradeResults;
+    }
+
+
+    private function printResults(array $results): void
+    {
+        $formattedResults = [
+            "Final Balance: " . $results['balance'] . "$",
+            "Gross Profit: " . $results['gross']['pnl'] . "$ (" . $results['gross']['percentage'] . "%)",
+            "Net Profit: " . $results['net']['pnl'] . "$ (" . $results['net']['percentage'] . "%)",
+            "Total Fee Paid: " . $results['fee'] . "$",
+            "MDD: " . $results['mdd'] . "%"
+        ];
+
+        foreach ($formattedResults as $line) {
+            $this->print($line, 'success');
         }
     }
 
@@ -195,10 +216,12 @@ class TradingSimulator
 
 // Example usage:
 $simulator = new TradingSimulator();
-$simulator->principleAmount(1000)
-    ->totalTrades(100)
+$results = $simulator->principleAmount(1000)
+    ->totalTrades(10)
     ->winPercentage(50)
     ->riskToRewardRatio(2.5)
     ->platformFee(0.1)
     ->compounding(true)
     ->simulate();
+
+var_dump($results);
