@@ -1,87 +1,38 @@
 # Trading Simulator
 
-A PHP class for simulating trading scenarios based on specified parameters like initial balance, win rate, risk-reward ratio, total trades, compounding, and platform fees.
+The Trading Simulator is a PHP class designed to simulate a trading scenario based on specified parameters such as initial balance, win rate, risk-to-reward ratio, total number of trades, platform fee rate, and compounding settings.
 
-## Table of Contents
+## Features
 
-- [Introduction](#introduction)
-- [Usage](#usage)
-- [Methods](#methods)
-- [Example](#example)
-- [Todo](#todo)
+- Simulate trading scenarios with configurable parameters.
+- Calculate and display various trading statistics.
+- Option to enable or disable compounding for the simulation.
+- Adjustable risk-to-reward ratio for each trade.
+- Platform fee rate consideration for accurate results.
 
-## Introduction
+## Getting Started
 
-The `TradingSimulator` class allows you to simulate trading scenarios and analyze the results based on user-defined parameters. It calculates the final balance, gross and net profit, maximum drawdown, and other statistics.
-
-## Usage
-
-To use the `TradingSimulator` class, follow these steps:
-
-1. Create an instance of the `TradingSimulator` class.
-2. Set the simulation parameters using the provided methods.
-3. Call the `simulate` method to run the simulation and get the results.
-
-## Methods
-
-### `initialBalance(int $amount): self`
-
-Set the initial balance for the simulation.
-
-### `winRate(int $percentage): self`
-
-Set the win rate percentage for the simulation.
-
-### `riskRewardRatio(float $riskRewardRatio): self`
-
-Set the risk to reward ratio for the simulation.
-
-### `totalTradesCount(int $totalTradesCount): self`
-
-Set the total number of trades for the simulation.
-
-### `enableCompounding(bool $shouldCompound): self`
-
-Enable or disable compounding for the simulation.
-
-### `platformFeeRate(float $percentage): self`
-
-Set the platform fee rate for each trade in the simulation.
-
-### `simulate(): array`
-
-Run the simulation and return an array containing the results.
-
-### `printResults(array $results): void`
-
-Display the formatted results to the console.
-
-### `validateInputs(): void`
-
-Validate the inputs before starting the simulation.
-
-### `generateTradeResults(): array`
-
-Generate an array representing the results of individual trades.
-
-### `calculateMaxDrawdown(array $trades): float`
-
-Calculate the maximum drawdown based on the provided trades.
-
-### `print(string $message, string $color = 'default'): void`
-
-Print a message to the console with optional color.
+1. Include the `TradingSimulator` class in your PHP project.
+2. Create an instance of the `TradingSimulator` class.
+3. Set the desired parameters using the provided methods.
+4. Run the simulation using the `simulate()` method.
+5. Retrieve and analyze the results using the `getResults()` method or display them using `printResults()`.
 
 ## Example Usage
 
 ```php
+// Create a new instance of the TradingSimulator class
 $simulator = new TradingSimulator();
+
+// Set simulation parameters
 $results = $simulator->initialBalance(1000)
     ->totalTradesCount(10)
     ->winRate(50)
     ->riskRewardRatio(2)
     ->platformFeeRate(0.1)
     ->enableCompounding(true)
-    ->simulate();
+    ->simulate()
+    ->getResults();
 
+// Display the results
 var_dump($results);
