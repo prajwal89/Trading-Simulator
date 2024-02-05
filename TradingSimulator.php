@@ -37,6 +37,11 @@ class TradingSimulator
      */
     private float $platformFeeRate = 0.0;
 
+    /**
+     * @var array
+     */
+    private array $finalResults;
+
 
     /**
      * Set the initial balance for the simulation.
@@ -113,9 +118,9 @@ class TradingSimulator
     /**
      * Simulate the trading scenario and return the results.
      *
-     * @return array Simulation results.
+     * @return $this
      */
-    public function simulate(): array
+    public function simulate(): self
     {
         $this->validateInputs();
 
@@ -165,12 +170,13 @@ class TradingSimulator
             ];
         }
 
-        $tradeResults = array_merge(
-            ['results' => $this->getStats($tradeResults['trades'])],
+        $this->finalResults = array_merge(
+            ['parameters' => $this->toArray()],
+            ['result' => $this->getStats($tradeResults['trades'])],
             $tradeResults
         );
 
-        return $tradeResults;
+        return $this;
     }
 
     /**
@@ -216,20 +222,26 @@ class TradingSimulator
         return $stats;
     }
 
+
+    public function getResults(): array
+    {
+        return $this->finalResults;
+    }
+
     /**
      * Display the formatted results to the console.
      *
      * @param array $results Array containing simulation results.
      * @return void
      */
-    private function printResults(array $results): void
+    public function printResults(): void
     {
         $formattedResults = [
-            "Final Balance: " . $results['balance'] . "$",
-            "Gross Profit: " . $results['gross']['pnl'] . "$ (" . $results['gross']['percentage'] . "%)",
-            "Net Profit: " . $results['net']['pnl'] . "$ (" . $results['net']['percentage'] . "%)",
-            "Total Fee Paid: " . $results['fee'] . "$",
-            "MDD: " . $results['mdd'] . "%"
+            "Final Balance: " . $this->finalResults['result']['balance'] . "$",
+            "Gross Profit: " . $this->finalResults['result']['gross']['pnl'] . "$ (" . $this->finalResults['result']['gross']['percentage'] . "%)",
+            "Net Profit: " . $this->finalResults['result']['net']['pnl'] . "$ (" . $this->finalResults['result']['net']['percentage'] . "%)",
+            "Total Fee Paid: " . $this->finalResults['result']['fee'] . "$",
+            "MDD: " . $this->finalResults['result']['mdd'] . "%"
         ];
 
         foreach ($formattedResults as $line) {
@@ -315,6 +327,24 @@ class TradingSimulator
 
         echo $colors[$color] . $message . $colors['default'] . PHP_EOL;
     }
+
+    /**
+     * Convert the class object to an associative array.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $properties = get_object_vars($this);
+
+        $array = [];
+        foreach ($properties as $property => $value) {
+            // You can customize the transformation if needed
+            $array[$property] = $value;
+        }
+
+        return $array;
+    }
 }
 
 // Example usage:
@@ -325,6 +355,8 @@ $results = $simulator->initialBalance(1000)
     ->riskRewardRatio(2)
     ->platformFeeRate(0.1)
     ->enableCompounding(true)
-    ->simulate();
+    ->simulate()
+    ->getResults();
+// ->printResults();
 
 var_dump($results);
