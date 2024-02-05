@@ -7,49 +7,114 @@
 class TradingSimulator
 {
 
+    /**
+     * @var int Initial balance for the trading simulation.
+     */
     private int $initialBalance;
+
+    /**
+     * @var int Win rate percentage for the trading simulation.
+     */
     private int $winRate;
+
+    /**
+     * @var float Risk to reward ratio for the trading simulation.
+     */
     private float $riskRewardRatio;
+
+    /**
+     * @var int Total number of trades in the simulation.
+     */
     private int $totalTradesCount;
+
+    /**
+     * @var bool Flag indicating whether compounding is enabled or not.
+     */
     private bool $enableCompounding = true;
+
+    /**
+     * @var float Platform fee rate for each trade in the simulation.
+     */
     private float $platformFeeRate = 0.0;
 
+
+    /**
+     * Set the initial balance for the simulation.
+     *
+     * @param int $amount The initial balance amount.
+     * @return $this
+     */
     public function initialBalance(int $amount): self
     {
         $this->initialBalance = $amount;
         return $this;
     }
 
+    /**
+     * Set the win rate percentage for the simulation.
+     *
+     * @param int $percentage The win rate percentage.
+     * @return $this
+     */
     public function winRate(int $percentage): self
     {
         $this->winRate = $percentage;
         return $this;
     }
 
+    /**
+     * Set the risk to reward ratio for the simulation.
+     *
+     * @param float $riskRewardRatio The risk to reward ratio.
+     * @return $this
+     */
     public function riskRewardRatio(float $riskRewardRatio): self
     {
         $this->riskRewardRatio = $riskRewardRatio;
         return $this;
     }
 
+    /**
+     * Set the total number of trades for the simulation.
+     *
+     * @param int $totalTradesCount The total number of trades.
+     * @return $this
+     */
     public function totalTradesCount(int $totalTradesCount): self
     {
         $this->totalTradesCount = $totalTradesCount;
         return $this;
     }
 
+    /**
+     * Enable or disable compounding for the simulation.
+     *
+     * @param bool $shouldCompound Whether compounding should be enabled or not.
+     * @return $this
+     */
     public function enableCompounding(bool $shouldCompound): self
     {
         $this->enableCompounding = $shouldCompound;
         return $this;
     }
 
+    /**
+     * Set the platform fee rate for each trade in the simulation.
+     *
+     * @param float $percentage The platform fee rate as a percentage.
+     * @return $this
+     */
     public function platformFeeRate(float $percentage): self
     {
         $this->platformFeeRate = $percentage;
         return $this;
     }
 
+    /**
+     * Simulate the trading scenario and return the results.
+     *
+     * @return array Simulation results.
+     */
     public function simulate(): array
     {
         $this->validateInputs();
@@ -108,7 +173,12 @@ class TradingSimulator
         return $tradeResults;
     }
 
-
+    /**
+     * Calculate and return statistics based on the provided trades.
+     *
+     * @param array $trades Array containing trade information.
+     * @return array Trading statistics.
+     */
     private function getStats(array $trades): array
     {
         $totalFeePaid = round(array_sum(array_map(function ($trade) {
@@ -146,6 +216,12 @@ class TradingSimulator
         return $stats;
     }
 
+    /**
+     * Display the formatted results to the console.
+     *
+     * @param array $results Array containing simulation results.
+     * @return void
+     */
     private function printResults(array $results): void
     {
         $formattedResults = [
@@ -166,6 +242,11 @@ class TradingSimulator
         // fee,principle amount, 
     }
 
+    /**
+     * Generate an array representing the results of individual trades.
+     *
+     * @return array Array indicating whether each trade is a win or loss.
+     */
     private function generateTradeResults()
     {
         $winCount = $this->totalTradesCount * $this->winRate / 100;
@@ -190,6 +271,12 @@ class TradingSimulator
         return $tradeResults;
     }
 
+    /**
+     * Calculate the maximum drawdown based on the provided trades.
+     *
+     * @param array $trades Array containing trade information.
+     * @return float Maximum drawdown percentage.
+     */
     private function calculateMaxDrawdown(array $trades)
     {
         $maxDrawdown = 0;
@@ -206,6 +293,13 @@ class TradingSimulator
         return round($maxDrawdown * 100, 2);
     }
 
+    /**
+     * Print a message to the console with optional color.
+     *
+     * @param string $message The message to be printed.
+     * @param string $color The color code for the console output.
+     * @return void
+     */
     private function print(string $message, string $color = 'default')
     {
         $colors = [
