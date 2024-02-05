@@ -7,7 +7,6 @@
 
 class TradingSimulator
 {
-
     /**
      * @var int Initial balance for the trading simulation.
      */
@@ -38,81 +37,83 @@ class TradingSimulator
      */
     private float $platformFeeRate = 0.0;
 
-    /**
-     * @var array
-     */
     private array $finalResults;
-
 
     /**
      * Set the initial balance for the simulation.
      *
-     * @param int $amount The initial balance amount.
+     * @param  int  $amount The initial balance amount.
      * @return $this
      */
     public function initialBalance(int $amount): self
     {
         $this->initialBalance = $amount;
+
         return $this;
     }
 
     /**
      * Set the win rate percentage for the simulation.
      *
-     * @param int $percentage The win rate percentage.
+     * @param  int  $percentage The win rate percentage.
      * @return $this
      */
     public function winRate(int $percentage): self
     {
         $this->winRate = $percentage;
+
         return $this;
     }
 
     /**
      * Set the risk to reward ratio for the simulation.
      *
-     * @param float $riskRewardRatio The risk to reward ratio.
+     * @param  float  $riskRewardRatio The risk to reward ratio.
      * @return $this
      */
     public function riskRewardRatio(float $riskRewardRatio): self
     {
         $this->riskRewardRatio = $riskRewardRatio;
+
         return $this;
     }
 
     /**
      * Set the total number of trades for the simulation.
      *
-     * @param int $totalTradesCount The total number of trades.
+     * @param  int  $totalTradesCount The total number of trades.
      * @return $this
      */
     public function totalTradesCount(int $totalTradesCount): self
     {
         $this->totalTradesCount = $totalTradesCount;
+
         return $this;
     }
 
     /**
      * Enable or disable compounding for the simulation.
      *
-     * @param bool $shouldCompound Whether compounding should be enabled or not.
+     * @param  bool  $shouldCompound Whether compounding should be enabled or not.
      * @return $this
      */
     public function enableCompounding(bool $shouldCompound): self
     {
         $this->enableCompounding = $shouldCompound;
+
         return $this;
     }
 
     /**
      * Set the platform fee rate for each trade in the simulation.
      *
-     * @param float $percentage The platform fee rate as a percentage.
+     * @param  float  $percentage The platform fee rate as a percentage.
      * @return $this
      */
     public function platformFeeRate(float $percentage): self
     {
         $this->platformFeeRate = $percentage;
+
         return $this;
     }
 
@@ -141,9 +142,9 @@ class TradingSimulator
 
             // calculate PNL
             if ($this->enableCompounding) {
-                $positionSize =  $currentBalance;
+                $positionSize = $currentBalance;
             } else {
-                $positionSize =  $this->initialBalance;
+                $positionSize = $this->initialBalance;
             }
 
             if ($isWin) {
@@ -153,7 +154,7 @@ class TradingSimulator
                 $pnl = - ($positionSize / 100) * 1;
             }
 
-            // deduct platform fee 
+            // deduct platform fee
             if ($this->platformFeeRate !== 0.0) {
                 $fee = ($this->platformFeeRate / 100) * $positionSize;
                 $pnl -= $fee;
@@ -181,7 +182,7 @@ class TradingSimulator
     /**
      * Calculate and return statistics based on the provided trades.
      *
-     * @param array $trades Array containing trade information.
+     * @param  array  $trades Array containing trade information.
      * @return array Trading statistics.
      */
     private function getStats(array $trades): array
@@ -206,17 +207,16 @@ class TradingSimulator
             'mdd' => round($this->calculateMaxDrawdown($trades), 2),
             'gross' => [
                 'pnl' => round($grossProfit, 2),
-                'percentage' => round($grossProfitPercentage, 2)
+                'percentage' => round($grossProfitPercentage, 2),
             ],
             'net' => [
                 'pnl' => round($netProfit, 2),
-                'percentage' => round($netProfitPercentage, 2)
-            ]
+                'percentage' => round($netProfitPercentage, 2),
+            ],
         ];
 
         return $stats;
     }
-
 
     public function getResults(): array
     {
@@ -226,17 +226,16 @@ class TradingSimulator
     /**
      * Display the formatted results to the console.
      *
-     * @param array $results Array containing simulation results.
-     * @return void
+     * @param  array  $results Array containing simulation results.
      */
     public function printResults(): void
     {
         $formattedResults = [
-            "Final Balance: " . $this->finalResults['result']['balance'] . "$",
-            "Gross Profit: " . $this->finalResults['result']['gross']['pnl'] . "$ (" . $this->finalResults['result']['gross']['percentage'] . "%)",
-            "Net Profit: " . $this->finalResults['result']['net']['pnl'] . "$ (" . $this->finalResults['result']['net']['percentage'] . "%)",
-            "Total Fee Paid: " . $this->finalResults['result']['fee'] . "$",
-            "MDD: " . $this->finalResults['result']['mdd'] . "%"
+            'Final Balance: ' . $this->finalResults['result']['balance'] . '$',
+            'Gross Profit: ' . $this->finalResults['result']['gross']['pnl'] . '$ (' . $this->finalResults['result']['gross']['percentage'] . '%)',
+            'Net Profit: ' . $this->finalResults['result']['net']['pnl'] . '$ (' . $this->finalResults['result']['net']['percentage'] . '%)',
+            'Total Fee Paid: ' . $this->finalResults['result']['fee'] . '$',
+            'MDD: ' . $this->finalResults['result']['mdd'] . '%',
         ];
 
         foreach ($formattedResults as $line) {
@@ -246,7 +245,7 @@ class TradingSimulator
 
     private function validateInputs()
     {
-        // fee,principle amount, 
+        // fee,principle amount,
     }
 
     /**
@@ -281,7 +280,7 @@ class TradingSimulator
     /**
      * Calculate the maximum drawdown based on the provided trades.
      *
-     * @param array $trades Array containing trade information.
+     * @param  array  $trades Array containing trade information.
      * @return float Maximum drawdown percentage.
      */
     private function calculateMaxDrawdown(array $trades)
@@ -303,8 +302,8 @@ class TradingSimulator
     /**
      * Print a message to the console with optional color.
      *
-     * @param string $message The message to be printed.
-     * @param string $color The color code for the console output.
+     * @param  string  $message The message to be printed.
+     * @param  string  $color The color code for the console output.
      * @return void
      */
     private function print(string $message, string $color = 'default')
@@ -313,7 +312,7 @@ class TradingSimulator
             'default' => "\033[0m",   // Reset to default color
             'success' => "\033[0;32m", // Green
             'error' => "\033[0;31m",   // Red
-            'info' => "\033[0;36m"     // Cyan
+            'info' => "\033[0;36m",     // Cyan
         ];
 
         if (!isset($colors[$color])) {
