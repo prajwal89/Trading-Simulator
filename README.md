@@ -36,3 +36,9 @@ $results = $simulator->initialBalance(1000)
 
 // Display the results
 var_dump($results);
+```
+
+## Live Demo
+
+We've developed an interactive **Trading Simulator**.
+Check it out [here](https://onlineminitools.com/trading-simulator).
