@@ -7,46 +7,46 @@
 class TradingSimulator
 {
 
-    private int $principleAmount;
-    private int $winPercentage;
-    private float $riskToRewardRatio;
-    private int $totalTrades;
-    private bool $compounding = true;
-    private float $platformFee = 0.0;
+    private int $initialBalance;
+    private int $winRate;
+    private float $riskRewardRatio;
+    private int $totalTradesCount;
+    private bool $enableCompounding = true;
+    private float $platformFeeRate = 0.0;
 
-    public function principleAmount(int $amount): self
+    public function initialBalance(int $amount): self
     {
-        $this->principleAmount = $amount;
+        $this->initialBalance = $amount;
         return $this;
     }
 
-    public function winPercentage(int $percentage): self
+    public function winRate(int $percentage): self
     {
-        $this->winPercentage = $percentage;
+        $this->winRate = $percentage;
         return $this;
     }
 
-    public function riskToRewardRatio(float $riskToRewardRatio): self
+    public function riskRewardRatio(float $riskRewardRatio): self
     {
-        $this->riskToRewardRatio = $riskToRewardRatio;
+        $this->riskRewardRatio = $riskRewardRatio;
         return $this;
     }
 
-    public function totalTrades(int $totalTrades): self
+    public function totalTradesCount(int $totalTradesCount): self
     {
-        $this->totalTrades = $totalTrades;
+        $this->totalTradesCount = $totalTradesCount;
         return $this;
     }
 
-    public function compounding(bool $shouldCompound): self
+    public function enableCompounding(bool $shouldCompound): self
     {
-        $this->compounding = $shouldCompound;
+        $this->enableCompounding = $shouldCompound;
         return $this;
     }
 
-    public function platformFee(float $percentage): self
+    public function platformFeeRate(float $percentage): self
     {
-        $this->platformFee = $percentage;
+        $this->platformFeeRate = $percentage;
         return $this;
     }
 
@@ -56,7 +56,7 @@ class TradingSimulator
 
         $tradeResults = [];
 
-        $tradeResults['balance'] = $this->principleAmount;
+        $tradeResults['balance'] = $this->initialBalance;
 
         $arrayOfWinsAndLoses = $this->generateTradeResults();
 
@@ -69,22 +69,22 @@ class TradingSimulator
             $positionSize = 0;
 
             // calculate PNL
-            if ($this->compounding) {
+            if ($this->enableCompounding) {
                 $positionSize =  $tradeResults['balance'];
             } else {
-                $positionSize =  $this->principleAmount;
+                $positionSize =  $this->initialBalance;
             }
 
             if ($isWin) {
-                $pnl = ($positionSize / 100) * $this->riskToRewardRatio;
+                $pnl = ($positionSize / 100) * $this->riskRewardRatio;
             } else {
-                // 1 b.c  1/$this->riskToRewardRatio
+                // 1 b.c  1/$this->riskRewardRatio
                 $pnl = - ($positionSize / 100) * 1;
             }
 
             // deduct platform fee 
-            if ($this->platformFee !== 0.0) {
-                $fee = ($this->platformFee / 100) * $positionSize;
+            if ($this->platformFeeRate !== 0.0) {
+                $fee = ($this->platformFeeRate / 100) * $positionSize;
                 $pnl -= $fee;
                 $totalFeePaid += $fee;
             }
@@ -101,7 +101,7 @@ class TradingSimulator
         }
 
         $tradeResults = array_merge(
-            $this->getStats($tradeResults['trades']),
+            ['results' => $this->getStats($tradeResults['trades'])],
             $tradeResults
         );
 
@@ -117,13 +117,13 @@ class TradingSimulator
 
         $finalBalance = end($trades)['balance'];
 
-        $grossProfit = $finalBalance - $this->principleAmount;
+        $grossProfit = $finalBalance - $this->initialBalance;
 
-        $grossProfitPercentage = round($grossProfit / ($this->principleAmount / 100), 2);
+        $grossProfitPercentage = round($grossProfit / ($this->initialBalance / 100), 2);
 
         $netProfit = $grossProfit - $totalFeePaid;
 
-        $netProfitPercentage = round($netProfit / ($this->principleAmount / 100), 2);
+        $netProfitPercentage = round($netProfit / ($this->initialBalance / 100), 2);
 
         $mdd = $this->calculateMaxDrawdown($trades);
 
@@ -168,18 +168,18 @@ class TradingSimulator
 
     private function generateTradeResults()
     {
-        $winCount = $this->totalTrades * $this->winPercentage / 100;
-        $lossCount = $this->totalTrades - $winCount;
+        $winCount = $this->totalTradesCount * $this->winRate / 100;
+        $lossCount = $this->totalTradesCount - $winCount;
 
-        $tradeResults = array_fill(0, $this->totalTrades, false); // Initialize the array with all losses
+        $tradeResults = array_fill(0, $this->totalTradesCount, false); // Initialize the array with all losses
 
         // Set random positions in the array to true for wins
         for ($i = 0; $i < $winCount; $i++) {
-            $randomIndex = mt_rand(0, $this->totalTrades - 1);
+            $randomIndex = mt_rand(0, $this->totalTradesCount - 1);
 
             // Ensure the selected index is not already a win
             while ($tradeResults[$randomIndex]) {
-                $randomIndex = mt_rand(0, $this->totalTrades - 1);
+                $randomIndex = mt_rand(0, $this->totalTradesCount - 1);
             }
 
             $tradeResults[$randomIndex] = true;
@@ -194,7 +194,7 @@ class TradingSimulator
     {
         $maxDrawdown = 0;
         $drawdown = 0;
-        $peakBalance = $this->principleAmount;
+        $peakBalance = $this->initialBalance;
 
         foreach ($trades as $trade) {
             $peakBalance = max($peakBalance, $trade['balance']);
@@ -225,12 +225,12 @@ class TradingSimulator
 
 // Example usage:
 $simulator = new TradingSimulator();
-$results = $simulator->principleAmount(1000)
-    ->totalTrades(10)
-    ->winPercentage(50)
-    ->riskToRewardRatio(2)
-    ->platformFee(0.1)
-    ->compounding(true)
+$results = $simulator->initialBalance(1000)
+    ->totalTradesCount(10)
+    ->winRate(50)
+    ->riskRewardRatio(2)
+    ->platformFeeRate(0.1)
+    ->enableCompounding(true)
     ->simulate();
 
 var_dump($results);
